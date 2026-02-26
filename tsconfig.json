@@ -6,6 +6,9 @@
     "lib": [
       "es6"
     ],
+    "types": [
+      "node"
+    ],
     "skipLibCheck": true,
     "sourceMap": true,
     "rootDir": "src",

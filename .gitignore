@@ -3,3 +3,4 @@ out
 .vscode
 .history
 *.vsix
+.DS_Store

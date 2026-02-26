@@ -2,7 +2,7 @@
   "name": "temp-repo-cloner",
   "displayName": "Temp Repo Cloner",
   "description": "Clone a repository into a temporary directory and delete it when closed.",
-  "version": "0.0.9",
+  "version": "0.0.11",
   "publisher": "your-publisher-name",
   "repository": {
     "type": "git",
@@ -16,7 +16,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:extension.cloneTempRepo"
+    "onCommand:extension.cloneTempRepo",
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -32,7 +33,7 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pack": "vsce package",
-    "install-extension": "node -e \"const p = require('./package.json'); console.log('code --install-extension ' + p.name + '-' + p.version + '.vsix')\" | sh",
+    "install-extension": "node -e \"const p = require('./package.json'); const code = process.env.CODE_PATH || 'code'; console.log(code + ' --install-extension ' + p.name + '-' + p.version + '.vsix')\" | sh",
     "dev": "npm run compile && npm run pack && npm run install-extension"
   },
   "devDependencies": {

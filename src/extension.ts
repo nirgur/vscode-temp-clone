@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import { exec } from 'child_process';
 
@@ -14,6 +15,16 @@ interface GitHubRepository {
 declare const fetch: any;
 
 export function activate(context: vscode.ExtensionContext) {
+    // If this window is already showing a temp clone, track it for cleanup on close.
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    if (workspaceFolder) {
+        const wsPath = workspaceFolder.uri.fsPath;
+        const tmpdir = os.tmpdir();
+        if (wsPath.startsWith(tmpdir) && wsPath.includes('-vscode-clone-')) {
+            tempDir = wsPath;
+        }
+    }
+
     let disposable = vscode.commands.registerCommand('extension.cloneTempRepo', async () => {
         const options = ['Select a repository from GitHub', 'Enter Git repository URL manually'];
         const choice = await vscode.window.showQuickPick(options, {
@@ -123,7 +134,7 @@ async function handleClone(repoUrl: string) {
 
     console.log(`Repository name: ${repoName}`);
 
-    tempDir = fs.mkdtempSync(path.join(require('os').tmpdir(), `${repoName}-vscode-clone-`));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), `${repoName}-vscode-clone-`));
     console.log(`Temporary directory created: ${tempDir}`);
 
     vscode.window.withProgress({
@@ -140,6 +151,9 @@ async function handleClone(repoUrl: string) {
             // Open the cloned repository in a new VS Code window
             console.log(`Opening cloned repository in new VS Code window: ${tempDir}`);
             await vscode.commands.executeCommand('vscode.openFolder', uri, true);
+            // Clear tempDir so this window's deactivate() doesn't delete it —
+            // the new window's extension instance will handle cleanup instead.
+            tempDir = undefined;
         } catch (error: any) {
             vscode.window.showErrorMessage(`Failed to clone repository: ${error.message}`);
             console.error(`Failed to clone repository: ${error.message}`);
